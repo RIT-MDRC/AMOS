@@ -38,8 +38,8 @@ while not done:
     full = joystick.get_button(1)
 
     if not full:
-        left /= 2
-        right /= 2
+        left /= 3
+        right /= 3
 
     screen.fill(WHITE)
     pygame.draw.rect(screen, BLACK, [50, (900 / 2) - 25, 50, 400 * -left])

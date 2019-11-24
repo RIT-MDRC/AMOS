@@ -1,5 +1,5 @@
 import socket
-import serial
+from smbus2 import SMBus
 
 
 def main():
@@ -8,9 +8,7 @@ def main():
     s.listen(4)
 
     conn, addr = s.accept()
-    ser = serial.Serial('/dev/cu.usbserial-14430', 9600)
-    print(ser)
-    print(ser.name)
+    bus = SMBus(1)
 
     while True:
         data = conn.recv(5)
@@ -22,10 +20,10 @@ def main():
         left_raw = binary[0]
         right_raw = binary[1]
 
-        ser.write(bytes([left_raw, right_raw]))
-        ser.flush()
+        bus.write_byte(4, left_raw)
+        bus.write_byte(4, right_raw)
+
         print('Sent:', left_raw, right_raw)
-        # print('Read:', ser.readline().decode('utf-8'))
 
 
 if __name__ == '__main__':

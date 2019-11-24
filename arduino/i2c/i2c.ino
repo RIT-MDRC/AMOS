@@ -1,4 +1,5 @@
- #include <Servo.h>
+#include <Servo.h>
+#include <Wire.h>
 
 #define LEFT_A_PIN 11
 #define LEFT_B_PIN 6
@@ -17,6 +18,9 @@ unsigned long lastPacket = 0;
 void setup() {
   Serial.begin(9600);
   
+  Wire.begin(4);
+  Wire.onReceive(receiveI2C);
+  
   leftA.attach(LEFT_A_PIN);
   leftB.attach(LEFT_B_PIN);
   rightA.attach(RIGHT_A_PIN);
@@ -26,18 +30,25 @@ void setup() {
   pinMode(7, INPUT);
   pinMode(8, INPUT);
   pinMode(12, INPUT);
-  
+
   setMotorOutput(NO_POWER, NO_POWER);
 }
 
-void loop() {
-  if (Serial.available() >= 2) {
-    int leftByte = Serial.read();
-    int rightByte = Serial.read();
+void receiveI2C(int howMany) {
+  // read the two control bytes and send to motors
+  while (Wire.available() >= 2) {
+    int leftByte = Wire.read();
+    int rightByte = Wire.read();
     setMotorOutput(leftByte, rightByte);
     lastPacket = millis();
-  } else if (lastPacket != 0 && millis() - lastPacket > PACKET_TIMEOUT_MS) {
+  }
+}
+
+void loop() {
+  // check for packet timeout
+  if (lastPacket != 0 && millis() - lastPacket > PACKET_TIMEOUT_MS) {
     setMotorOutput(NO_POWER, NO_POWER);
+    Serial.println("Packet timeout!");
   }
 }
 
@@ -51,4 +62,10 @@ void setMotorOutput(int leftByte, int rightByte) {
   leftB.writeMicroseconds(leftInvTime);
   rightA.writeMicroseconds(rightInvTime);
   rightB.writeMicroseconds(rightTime);
+
+  Serial.print("Setting motor output ");
+  Serial.print(leftByte, DEC);
+  Serial.print(", ");
+  Serial.print(rightByte, DEC);
+  Serial.println();
 }
