@@ -1,4 +1,4 @@
- #include <Servo.h>
+#include <Servo.h>
 
 #define LEFT_A_PIN 11
 #define LEFT_B_PIN 6
@@ -49,6 +49,6 @@ void setMotorOutput(int leftByte, int rightByte) {
   
   leftA.writeMicroseconds(leftTime);
   leftB.writeMicroseconds(leftInvTime);
-  rightA.writeMicroseconds(rightInvTime);
-  rightB.writeMicroseconds(rightTime);
+  rightA.writeMicroseconds(rightTime);
+  rightB.writeMicroseconds(rightInvTime);
 }

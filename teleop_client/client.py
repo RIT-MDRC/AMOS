@@ -24,6 +24,7 @@ clock = pygame.time.Clock()
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 done = False
+fast = False
 
 pygame.display.set_caption('WiFi Drive Visualizer')
 screen = pygame.display.set_mode([250, 900])
@@ -35,16 +36,18 @@ while not done:
 
     left = -joystick.get_axis(1)
     right = -joystick.get_axis(3)
-    full = joystick.get_button(1)
 
-    if not full:
+    if joystick.get_button(1):
+        fast = not fast
+
+    if not fast:
         left /= 3
         right /= 3
 
     screen.fill(WHITE)
     pygame.draw.rect(screen, BLACK, [50, (900 / 2) - 25, 50, 400 * -left])
     pygame.draw.rect(screen, BLACK, [150, (900 / 2) - 25, 50, 400 * -right])
-    pygame.draw.rect(screen, GREEN if not full else BLUE, [0, 900 - 50, 250, 50])
+    pygame.draw.rect(screen, GREEN if not fast else BLUE, [0, 900 - 50, 250, 50])
     pygame.display.flip()
 
     send_to_server(left, right)
