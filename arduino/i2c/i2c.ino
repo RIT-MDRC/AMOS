@@ -17,10 +17,11 @@ unsigned long lastPacket = 0;
 
 void setup() {
   Serial.begin(9600);
-  
+
   Wire.begin(4);
   Wire.setClock(400000);
-  
+  Wire.onReceive(myHandler);
+
   leftA.attach(LEFT_A_PIN);
   leftB.attach(LEFT_B_PIN);
   rightA.attach(RIGHT_A_PIN);
@@ -32,19 +33,27 @@ void setup() {
   pinMode(12, INPUT);
 
   setMotorOutput(NO_POWER, NO_POWER);
+
+  Serial.print("Started");
+  Serial.flush();
 }
 
 void loop() {
+  // check for packet timeout
+  if (lastPacket != 0 && millis() - lastPacket > PACKET_TIMEOUT_MS) {
+    setMotorOutput(NO_POWER, NO_POWER);
+  }
+}
+
+void myHandler(int numBytes) {
+  Serial.print("myHandler called");
+  Serial.flush();
+
   if (Wire.available() >= 2) {
     int leftByte = Wire.read();
     int rightByte = Wire.read();
     setMotorOutput(leftByte, rightByte);
     lastPacket = millis();
-  }
-  
-  // check for packet timeout
-  if (lastPacket != 0 && millis() - lastPacket > PACKET_TIMEOUT_MS) {
-    setMotorOutput(NO_POWER, NO_POWER);
   }
 }
 
@@ -52,12 +61,12 @@ void setMotorOutput(int leftByte, int rightByte) {
   if (leftByte < 0 || rightByte < 0) {
     return;
   }
-  
+
   int leftTime = 2000 - (1000.0 * ((double) leftByte / 255.0));
   int leftInvTime = (1000 - (leftTime - 1000)) + 1000;
   int rightTime = 2000 - (1000.0 * ((double) rightByte / 255.0));
   int rightInvTime = (1000 - (rightTime - 1000)) + 1000;
-  
+
   leftA.writeMicroseconds(leftTime);
   leftB.writeMicroseconds(leftInvTime);
   rightA.writeMicroseconds(rightInvTime);
